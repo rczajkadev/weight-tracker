@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Validate bicep
         run: |
@@ -33,7 +33,7 @@ jobs:
           az bicep build-params -f main.bicepparam --outfile parameters.json
 
       - name: Upload infrastructure artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: infra
           path: infra/azure/*.json
@@ -50,7 +50,7 @@ jobs:
       packages: read
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -82,7 +82,7 @@ jobs:
         run: dotnet publish ${{ env.API_PROJECT_PATH }} --no-build --configuration Release --output webapp
 
       - name: Upload API artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: webapp
           path: ${{ env.WORKING_DIRECTORY }}/webapp/**
@@ -100,7 +100,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Download infrastructure artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: infra
           path: infra
@@ -124,7 +124,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Download API artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: webapp
           path: webapp
