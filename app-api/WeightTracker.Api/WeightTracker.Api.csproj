@@ -5,7 +5,7 @@
     <PackageReference Include="FastEndpoints.Security" />
     <PackageReference Include="FastEndpoints.Swagger" />
     <PackageReference Include="Microsoft.Identity.Web" />
-    <PackageReference Include="pxbunny.result" />
+    <PackageReference Include="PxBunny.Result" />
     <PackageReference Include="PxBunny.Result.Generator" />
   </ItemGroup>
 
