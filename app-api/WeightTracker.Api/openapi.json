@@ -1,0 +1,505 @@
+{
+  "x-generator": "NSwag v14.6.3.0 (NJsonSchema v11.5.2.0 (Newtonsoft.Json v13.0.0.0))",
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Weight Tracker",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/weight/{date}": {
+      "put": {
+        "tags": [
+          "Weight"
+        ],
+        "operationId": "UpdateWeight",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "x-name": "WeightPutRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeightPutRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          },
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Weight"
+        ],
+        "operationId": "GetWeightByDate",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeightGetByDateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          },
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Weight"
+        ],
+        "operationId": "DeleteWeight",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          },
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/weight": {
+      "post": {
+        "tags": [
+          "Weight"
+        ],
+        "operationId": "AddWeight",
+        "requestBody": {
+          "x-name": "WeightPostRequest",
+          "description": "",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeightPostRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          },
+          {
+            "ApiKey": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Weight"
+        ],
+        "operationId": "GetWeight",
+        "parameters": [
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeightGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          },
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": [
+          "Status"
+        ],
+        "operationId": "GetStatus",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusGetResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "security": [
+          {
+            "JWTBearerAuth": []
+          },
+          {
+            "ApiKey": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "WeightPutRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "weight"
+        ],
+        "properties": {
+          "weight": {
+            "type": "number",
+            "format": "decimal",
+            "maximum": 500.0,
+            "minimum": 0.0,
+            "minLength": 1,
+            "nullable": false,
+            "exclusiveMinimum": true
+          }
+        }
+      },
+      "WeightPostRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "weight",
+          "date"
+        ],
+        "properties": {
+          "weight": {
+            "type": "number",
+            "format": "decimal",
+            "maximum": 500.0,
+            "minimum": 0.0,
+            "minLength": 1,
+            "nullable": false,
+            "exclusiveMinimum": true
+          },
+          "date": {
+            "type": "string",
+            "minLength": 1,
+            "nullable": false
+          }
+        }
+      },
+      "WeightGetResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "today": {
+            "$ref": "#/components/schemas/TodayResponse"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/StatsResponse"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WeightResponseItem"
+            }
+          }
+        }
+      },
+      "TodayResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasEntry": {
+            "type": "boolean"
+          },
+          "weight": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          }
+        }
+      },
+      "StatsResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "avg": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "max": {
+            "type": "number",
+            "format": "decimal"
+          },
+          "min": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "WeightResponseItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "WeightGetRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "WeightGetByDateResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "WeightGetByDateRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "WeightDeleteRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "StatusGetResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "today": {
+            "$ref": "#/components/schemas/TodayResponse"
+          },
+          "streak": {
+            "$ref": "#/components/schemas/StreakResponse"
+          },
+          "adherence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdherenceResponseItem"
+            }
+          }
+        }
+      },
+      "StreakResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "current": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "longest": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "AdherenceResponseItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "window": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "daysWithEntry": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "daysMissed": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "JWTBearerAuth": {
+        "type": "http",
+        "description": "Enter a JWT token to authorize the requests...",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      },
+      "ApiKey": {
+        "type": "apiKey",
+        "description": "Enter an API key to authorize the requests.",
+        "name": "X-API-KEY",
+        "in": "header"
+      }
+    }
+  }
+}
