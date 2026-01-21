@@ -5,17 +5,18 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Azure.Data.Tables" Version="12.11.0" />
+    <PackageVersion Include="AspNetCore.Authentication.ApiKey" Version="9.0.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
-    <PackageVersion Include="FastEndpoints" Version="7.1.1" />
-    <PackageVersion Include="FastEndpoints.Security" Version="7.1.1" />
-    <PackageVersion Include="FastEndpoints.Swagger" Version="7.1.1" />
+    <PackageVersion Include="FastEndpoints" Version="7.2.0" />
+    <PackageVersion Include="FastEndpoints.Security" Version="7.2.0" />
+    <PackageVersion Include="FastEndpoints.Swagger" Version="7.2.0" />
     <PackageVersion Include="Microsoft.Extensions.Azure" Version="1.13.1" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.2" />
     <PackageVersion Include="Microsoft.Identity.Web" Version="4.3.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
     <PackageVersion Include="PxBunny.Result" Version="0.0.1" />
     <PackageVersion Include="PxBunny.Result.Generator" Version="0.0.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="xunit.v3" Version="3.2.1" />
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
   </ItemGroup>
 </Project>

@@ -21,7 +21,7 @@ internal sealed class StatusGetEndpoint : EndpointWithoutRequest<IResult>
 
     public override async Task<IResult> ExecuteAsync(CancellationToken ct)
     {
-        if (CurrentUser.Id is null)
+        if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();
 
         var command = new GetStatus(CurrentUser.Id);
