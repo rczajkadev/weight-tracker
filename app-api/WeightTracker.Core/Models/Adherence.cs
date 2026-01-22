@@ -11,7 +11,7 @@ public sealed record Adherence(int Window, int DaysWithEntry)
     {
         if (totalDays <= 0) return new Adherence(0, 0);
 
-        var lastDate = referenceDate ?? DateOnly.FromDateTime(DateTime.Today);
+        var lastDate = referenceDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var firstDate = lastDate.AddDays(-totalDays + 1);
 
         var datesInRange = data

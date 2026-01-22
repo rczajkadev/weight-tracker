@@ -10,5 +10,5 @@ public static class Extensions
         date.ToString(DateFormat, CultureInfo.InvariantCulture);
 
     public static bool IsValidDomainDateFormat(this string date) =>
-        !string.IsNullOrEmpty(date) && DateTime.TryParse(date, out _);
+        !string.IsNullOrEmpty(date) && DateOnly.TryParseExact(date, DateFormat, out _);
 }

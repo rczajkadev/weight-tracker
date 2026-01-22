@@ -6,7 +6,7 @@ public sealed record Status(Today Today, Streak Streak, IEnumerable<Adherence> A
 {
     public static Status Create(IList<WeightData> data, DateOnly? referenceDate = null)
     {
-        var today = referenceDate ?? DateOnly.FromDateTime(DateTime.Today);
+        var today = referenceDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
 
         return new Status(
             Today.Create(data, today),

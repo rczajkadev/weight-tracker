@@ -7,7 +7,7 @@ public sealed record Streak(int Current, int Longest)
 {
     public static Streak Create(IEnumerable<WeightData> data, DateOnly? referenceDate = null)
     {
-        var today = referenceDate ?? DateOnly.FromDateTime(DateTime.Today);
+        var today = referenceDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
 
         var datesOnly = data
             .Where(d => d.Date <= today).ToList()

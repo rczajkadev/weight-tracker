@@ -20,7 +20,7 @@ internal sealed class WeightGetByDateEndpoint : Endpoint<WeightGetByDateRequest,
 
     public override async Task<IResult> ExecuteAsync(WeightGetByDateRequest request, CancellationToken ct)
     {
-        if (CurrentUser.Id is null)
+        if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();
 
         var command = request.ToCommand(CurrentUser.Id);

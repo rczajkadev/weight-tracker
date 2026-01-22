@@ -19,12 +19,12 @@ internal sealed class WeightPostEndpoint : Endpoint<WeightPostRequest, IResult>
         Description(builder => builder
             .WithName("AddWeight")
             .Produces(StatusCodes.Status200OK)
-            .ProducesCommonProblems());
+            .ProducesWriteCommonProblems());
     }
 
     public override async Task<IResult> ExecuteAsync(WeightPostRequest request, CancellationToken ct)
     {
-        if (CurrentUser.Id is null)
+        if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();
 
         var (weight, date) = request;
@@ -35,7 +35,7 @@ internal sealed class WeightPostEndpoint : Endpoint<WeightPostRequest, IResult>
         return result.Match(() => Results.Ok(), ErrorsService.HandleError);
     }
 
-    private static DateOnly GetDate(string date)
+    private static DateOnly GetDate(string? date)
     {
         return string.IsNullOrWhiteSpace(date)
             ? DateOnly.FromDateTime(DateTime.UtcNow)

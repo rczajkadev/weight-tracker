@@ -2,7 +2,7 @@
 
 namespace WeightTracker.Api.Endpoints.Weight.Post;
 
-internal sealed record WeightPostRequest(decimal Weight, string Date);
+internal sealed record WeightPostRequest(decimal Weight, string? Date);
 
 internal sealed class WeightPostRequestValidator : Validator<WeightPostRequest>
 {
@@ -15,8 +15,7 @@ internal sealed class WeightPostRequestValidator : Validator<WeightPostRequest>
             .WithMessage("Dude, no way!");
 
         RuleFor(r => r.Date)
-            .NotEmpty()
-            .Must(date => date.IsValidDomainDateFormat())
+            .Must(date => string.IsNullOrWhiteSpace(date) || date.IsValidDomainDateFormat())
             .WithMessage("Invalid date format");
     }
 }

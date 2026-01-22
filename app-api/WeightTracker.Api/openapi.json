@@ -50,6 +50,9 @@
           },
           "500": {
             "description": "Server Error"
+          },
+          "409": {
+            "description": ""
           }
         },
         "security": [
@@ -139,6 +142,9 @@
           },
           "500": {
             "description": "Server Error"
+          },
+          "409": {
+            "description": ""
           }
         },
         "security": [
@@ -185,6 +191,9 @@
           },
           "500": {
             "description": "Server Error"
+          },
+          "409": {
+            "description": ""
           }
         },
         "security": [
@@ -318,8 +327,7 @@
         "type": "object",
         "additionalProperties": false,
         "required": [
-          "weight",
-          "date"
+          "weight"
         ],
         "properties": {
           "weight": {
@@ -333,8 +341,7 @@
           },
           "date": {
             "type": "string",
-            "minLength": 1,
-            "nullable": false
+            "nullable": true
           }
         }
       },

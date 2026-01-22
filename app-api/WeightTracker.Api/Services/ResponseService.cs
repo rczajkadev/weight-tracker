@@ -9,6 +9,7 @@ internal sealed class ResponseService
         : request.Code switch
         {
             HttpStatusCode.BadRequest => Errors.BadRequestError(),
+            HttpStatusCode.Conflict => Errors.ConflictError(),
             HttpStatusCode.NotFound => Errors.NotFoundError(),
             _ => Errors.InternalError()
         };

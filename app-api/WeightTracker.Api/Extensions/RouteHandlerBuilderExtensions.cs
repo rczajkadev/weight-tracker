@@ -9,4 +9,8 @@ internal static class RouteHandlerBuilderExtensions
         .Produces(StatusCodes.Status401Unauthorized)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status500InternalServerError);
+
+    public static RouteHandlerBuilder ProducesWriteCommonProblems(this RouteHandlerBuilder builder) => builder
+        .ProducesCommonProblems()
+        .Produces(StatusCodes.Status409Conflict);
 }

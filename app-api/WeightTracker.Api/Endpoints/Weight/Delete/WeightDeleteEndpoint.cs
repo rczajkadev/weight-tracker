@@ -19,12 +19,12 @@ internal sealed class WeightDeleteEndpoint : Endpoint<WeightDeleteRequest, IResu
         Description(builder => builder
             .WithName("DeleteWeight")
             .Produces(StatusCodes.Status200OK)
-            .ProducesCommonProblems());
+            .ProducesWriteCommonProblems());
     }
 
     public override async Task<IResult> ExecuteAsync(WeightDeleteRequest request, CancellationToken ct)
     {
-        if (CurrentUser.Id is null)
+        if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();
 
         var command = new RemoveWeightData(

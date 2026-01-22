@@ -19,12 +19,12 @@ internal sealed class WeightPutEndpoint : Endpoint<WeightPutRequest, IResult>
         Description(builder => builder
             .WithName("UpdateWeight")
             .Produces(StatusCodes.Status200OK)
-            .ProducesCommonProblems());
+            .ProducesWriteCommonProblems());
     }
 
     public override async Task<IResult> ExecuteAsync(WeightPutRequest request, CancellationToken ct)
     {
-        if (CurrentUser.Id is null)
+        if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();
 
         var (date, weight) = request;

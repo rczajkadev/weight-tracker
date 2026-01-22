@@ -9,7 +9,7 @@ public sealed record Stats(decimal AverageWeight, decimal MaxWeight, decimal Min
 
     public static Stats Create(IList<WeightData> data) => data.Count == 0
         ? Empty
-        : new(
+        : new Stats(
             AverageWeight: data.Average(d => Convert.ToDecimal(d.Weight)),
             MaxWeight: data.Max(x => Convert.ToDecimal(x.Weight)),
             MinWeight: data.Min(x => Convert.ToDecimal(x.Weight)));
