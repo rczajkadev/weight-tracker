@@ -1,12 +1,23 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import plotly.graph_objects as go
+
+from .constants import WEIGHT_UNIT
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from .models import WeightEntry
 
 BACKGROUND_COLOR = '#111111'
 DEFAULT_CONFIG = {'displaylogo': False}
-JAVASCRIPT = f'''document.body.style.backgroundColor = "{BACKGROUND_COLOR}"; document.title = "Weight Tracker";'''
+POST_SCRIPT = f'''document.body.style.backgroundColor = "{BACKGROUND_COLOR}"; document.title = "Weight Tracker";'''
 TEMPLATE = 'plotly_dark'
 
 
-def plot_data(data: list, avg: float) -> None:
+def plot_data(data: Sequence[WeightEntry], average: float) -> None:
     fig = go.Figure()
 
     fig.update_layout(
@@ -14,16 +25,16 @@ def plot_data(data: list, avg: float) -> None:
         legend={'orientation': 'h', 'yanchor': 'bottom', 'y': 1.02, 'xanchor': 'right', 'x': 1},
         hovermode='x unified',
         xaxis_title='Date',
-        yaxis_title='Weight [kg]',
+        yaxis_title=f'Weight [{WEIGHT_UNIT}]',
         template=TEMPLATE,
         paper_bgcolor=BACKGROUND_COLOR,
     )
 
-    weights = [item['weight'] for item in data]
-    dates = [item['date'] for item in data]
+    weights = [entry.weight for entry in data]
+    dates = [entry.date for entry in data]
     length = len(dates)
 
     fig.add_trace(go.Scatter(x=dates, y=weights, name='Weight', line_color='cyan'))
-    fig.add_trace(go.Scatter(x=dates, y=[avg] * length, name='Avg', line_color='deeppink'))
+    fig.add_trace(go.Scatter(x=dates, y=[average] * length, name='Avg', line_color='deeppink'))
 
-    fig.show(config=DEFAULT_CONFIG, post_script=[JAVASCRIPT])
+    fig.show(config=DEFAULT_CONFIG, post_script=[POST_SCRIPT])
