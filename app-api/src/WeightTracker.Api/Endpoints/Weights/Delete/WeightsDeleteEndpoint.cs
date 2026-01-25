@@ -5,9 +5,9 @@ using WeightTracker.Api.Cache;
 using WeightTracker.Api.Extensions;
 using WeightTracker.Api.Handlers;
 
-namespace WeightTracker.Api.Endpoints.Weight.Delete;
+namespace WeightTracker.Api.Endpoints.Weights.Delete;
 
-internal sealed class WeightDeleteEndpoint : Endpoint<WeightDeleteRequest, IResult>
+internal sealed class WeightsDeleteEndpoint : Endpoint<WeightsDeleteRequest, IResult>
 {
     public required CurrentUser CurrentUser { get; init; }
 
@@ -15,14 +15,14 @@ internal sealed class WeightDeleteEndpoint : Endpoint<WeightDeleteRequest, IResu
 
     public override void Configure()
     {
-        Delete("api/weight/{Date}");
+        Delete("api/weights/{Date}");
         Description(builder => builder
-            .WithName("DeleteWeight")
-            .Produces(StatusCodes.Status200OK)
+            .WithName("DeleteWeightEntry")
+            .Produces(StatusCodes.Status204NoContent)
             .ProducesWriteCommonProblems());
     }
 
-    public override async Task<IResult> ExecuteAsync(WeightDeleteRequest request, CancellationToken ct)
+    public override async Task<IResult> ExecuteAsync(WeightsDeleteRequest request, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();
@@ -33,6 +33,6 @@ internal sealed class WeightDeleteEndpoint : Endpoint<WeightDeleteRequest, IResu
         var result = await command.ExecuteAsync(ct);
 
         await Cache.EvictByUidAsync(CurrentUser.Id, ct);
-        return result.Match(() => Results.Ok(), ErrorsService.HandleError);
+        return result.Match(Results.NoContent, ErrorsService.HandleError);
     }
 }

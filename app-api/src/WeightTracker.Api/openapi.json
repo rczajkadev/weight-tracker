@@ -6,12 +6,12 @@
     "version": "1.0.0"
   },
   "paths": {
-    "/api/weight/{date}": {
+    "/api/weights/{date}": {
       "put": {
         "tags": [
-          "Weight"
+          "Weights"
         ],
-        "operationId": "UpdateWeight",
+        "operationId": "UpdateWeightEntry",
         "parameters": [
           {
             "name": "date",
@@ -23,12 +23,12 @@
           }
         ],
         "requestBody": {
-          "x-name": "WeightPutRequest",
+          "x-name": "WeightsPutRequest",
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WeightPutRequest"
+                "$ref": "#/components/schemas/WeightsPutRequest"
               }
             }
           },
@@ -37,7 +37,14 @@
         },
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeightsEntryResponse"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
@@ -66,9 +73,9 @@
       },
       "get": {
         "tags": [
-          "Weight"
+          "Weights"
         ],
-        "operationId": "GetWeightByDate",
+        "operationId": "GetWeightEntry",
         "parameters": [
           {
             "name": "date",
@@ -85,7 +92,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WeightGetByDateResponse"
+                  "$ref": "#/components/schemas/WeightsEntryResponse"
                 }
               }
             }
@@ -114,9 +121,9 @@
       },
       "delete": {
         "tags": [
-          "Weight"
+          "Weights"
         ],
-        "operationId": "DeleteWeight",
+        "operationId": "DeleteWeightEntry",
         "parameters": [
           {
             "name": "date",
@@ -128,8 +135,8 @@
           }
         ],
         "responses": {
-          "200": {
-            "description": "Success"
+          "204": {
+            "description": "No Content"
           },
           "400": {
             "description": "Bad Request"
@@ -157,19 +164,19 @@
         ]
       }
     },
-    "/api/weight": {
+    "/api/weights": {
       "post": {
         "tags": [
-          "Weight"
+          "Weights"
         ],
-        "operationId": "AddWeight",
+        "operationId": "CreateWeightEntry",
         "requestBody": {
-          "x-name": "WeightPostRequest",
+          "x-name": "WeightsPostRequest",
           "description": "",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/WeightPostRequest"
+                "$ref": "#/components/schemas/WeightsPostRequest"
               }
             }
           },
@@ -177,8 +184,15 @@
           "x-position": 1
         },
         "responses": {
-          "200": {
-            "description": "Success"
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeightsEntryResponse"
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad Request"
@@ -207,12 +221,12 @@
       },
       "get": {
         "tags": [
-          "Weight"
+          "Weights"
         ],
-        "operationId": "GetWeight",
+        "operationId": "GetWeights",
         "parameters": [
           {
-            "name": "dateFrom",
+            "name": "from",
             "in": "query",
             "schema": {
               "type": "string",
@@ -220,7 +234,7 @@
             }
           },
           {
-            "name": "dateTo",
+            "name": "to",
             "in": "query",
             "schema": {
               "type": "string",
@@ -234,7 +248,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WeightGetResponse"
+                  "$ref": "#/components/schemas/WeightsGetResponse"
                 }
               }
             }
@@ -262,19 +276,19 @@
         ]
       }
     },
-    "/api/status": {
+    "/api/weights/summary": {
       "get": {
         "tags": [
-          "Status"
+          "Weights"
         ],
-        "operationId": "GetStatus",
+        "operationId": "GetWeightsSummary",
         "responses": {
           "200": {
             "description": "Success",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/StatusGetResponse"
+                  "$ref": "#/components/schemas/WeightsSummaryGetResponse"
                 }
               }
             }
@@ -305,7 +319,20 @@
   },
   "components": {
     "schemas": {
-      "WeightPutRequest": {
+      "WeightsEntryResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "number",
+            "format": "decimal"
+          }
+        }
+      },
+      "WeightsPutRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -323,7 +350,7 @@
           }
         }
       },
-      "WeightPostRequest": {
+      "WeightsPostRequest": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -345,42 +372,23 @@
           }
         }
       },
-      "WeightGetResponse": {
+      "WeightsGetResponse": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "today": {
-            "$ref": "#/components/schemas/TodayResponse"
-          },
           "stats": {
-            "$ref": "#/components/schemas/StatsResponse"
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/StatsResponse"
+              }
+            ]
           },
           "data": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/WeightResponseItem"
+              "$ref": "#/components/schemas/WeightsEntryResponse"
             }
-          }
-        }
-      },
-      "TodayResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "date": {
-            "type": "string",
-            "format": "date"
-          },
-          "hasEntry": {
-            "type": "boolean"
-          },
-          "weight": {
-            "type": "number",
-            "format": "decimal",
-            "nullable": true
           }
         }
       },
@@ -402,48 +410,11 @@
           }
         }
       },
-      "WeightResponseItem": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "date": {
-            "type": "string"
-          },
-          "weight": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "WeightGetRequest": {
+      "WeightsGetRequest": {
         "type": "object",
         "additionalProperties": false
       },
-      "WeightGetByDateResponse": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "date": {
-            "type": "string"
-          },
-          "weight": {
-            "type": "number",
-            "format": "decimal"
-          }
-        }
-      },
-      "WeightGetByDateRequest": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "WeightDeleteRequest": {
-        "type": "object",
-        "additionalProperties": false
-      },
-      "StatusGetResponse": {
+      "WeightsSummaryGetResponse": {
         "type": "object",
         "additionalProperties": false,
         "properties": {
@@ -458,6 +429,24 @@
             "items": {
               "$ref": "#/components/schemas/AdherenceResponseItem"
             }
+          }
+        }
+      },
+      "TodayResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "hasEntry": {
+            "type": "boolean"
+          },
+          "weight": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
           }
         }
       },
@@ -492,6 +481,14 @@
             "format": "int32"
           }
         }
+      },
+      "WeightsGetByDateRequest": {
+        "type": "object",
+        "additionalProperties": false
+      },
+      "WeightsDeleteRequest": {
+        "type": "object",
+        "additionalProperties": false
       }
     },
     "securitySchemes": {

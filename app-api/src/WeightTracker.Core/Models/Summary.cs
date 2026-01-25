@@ -2,13 +2,13 @@
 
 namespace WeightTracker.Core.Models;
 
-public sealed record Status(Today Today, Streak Streak, IEnumerable<Adherence> Adherence)
+public sealed record Summary(Today Today, Streak Streak, IEnumerable<Adherence> Adherence)
 {
-    public static Status Create(IList<WeightData> data, DateOnly? referenceDate = null)
+    public static Summary Create(IList<WeightData> data, DateOnly? referenceDate = null)
     {
         var today = referenceDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
 
-        return new Status(
+        return new Summary(
             Today.Create(data, today),
             Streak.Create(data, referenceDate),
             [

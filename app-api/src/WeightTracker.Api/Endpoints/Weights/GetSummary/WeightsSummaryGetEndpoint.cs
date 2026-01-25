@@ -3,19 +3,19 @@ using WeightTracker.Api.Cache;
 using WeightTracker.Api.Extensions;
 using WeightTracker.Api.Handlers;
 
-namespace WeightTracker.Api.Endpoints.Status.Get;
+namespace WeightTracker.Api.Endpoints.Weights.GetSummary;
 
-internal sealed class StatusGetEndpoint : EndpointWithoutRequest<IResult>
+internal sealed class WeightsSummaryGetEndpoint : EndpointWithoutRequest<IResult>
 {
     public required CurrentUser CurrentUser { get; init; }
 
     public override void Configure()
     {
-        Get("api/status");
+        Get("api/weights/summary");
         Options(builder => builder.SetCustomCache());
         Description(builder => builder
-            .WithName("GetStatus")
-            .Produces<StatusGetResponse>()
+            .WithName("GetWeightsSummary")
+            .Produces<WeightsSummaryGetResponse>()
             .ProducesCommonProblems());
     }
 
@@ -24,7 +24,7 @@ internal sealed class StatusGetEndpoint : EndpointWithoutRequest<IResult>
         if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();
 
-        var command = new GetStatus(CurrentUser.Id);
+        var command = new GetWeightsSummary(CurrentUser.Id);
         var result = await command.ExecuteAsync(ct);
 
         return result.Match(d => Results.Ok(d.ToResponse()), ErrorsService.HandleError);

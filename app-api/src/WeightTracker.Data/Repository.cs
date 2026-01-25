@@ -37,7 +37,8 @@ internal sealed class Repository(TableServiceClient tableServiceClient) : IRepos
     {
         var tableClient = await GetTableClientAsync(ct);
         var entity = weightData.ToEntity();
-        var response = await tableClient.UpsertEntityAsync(entity, TableUpdateMode.Replace, ct);
+        entity.ETag = ETag.All;
+        var response = await tableClient.UpdateEntityAsync(entity, entity.ETag, TableUpdateMode.Replace, ct);
         return GetResponse(response);
     }
 

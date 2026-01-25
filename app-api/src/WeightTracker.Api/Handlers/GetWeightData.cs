@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace WeightTracker.Api.Handlers;
+﻿namespace WeightTracker.Api.Handlers;
 
 internal sealed record GetWeightData(string UserId, DateOnly DateFrom, DateOnly DateTo)
     : ICommand<Result<WeightDataGroup>>;
@@ -13,6 +11,6 @@ internal sealed class GetWeightDataHandler(IRepository repository)
         var (userId, dateFrom, dateTo) = command;
         var filter = new WeightDataFilter(userId, dateFrom, dateTo);
         var data = await repository.GetAsync(filter, ct);
-        return data.Data.Any() ? data : Errors.NotFoundError();
+        return data;
     }
 }

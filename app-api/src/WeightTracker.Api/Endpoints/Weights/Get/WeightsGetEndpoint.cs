@@ -2,23 +2,23 @@
 using WeightTracker.Api.Cache;
 using WeightTracker.Api.Extensions;
 
-namespace WeightTracker.Api.Endpoints.Weight.Get;
+namespace WeightTracker.Api.Endpoints.Weights.Get;
 
-internal sealed class WeightGetEndpoint : Endpoint<WeightGetRequest, IResult>
+internal sealed class WeightsGetEndpoint : Endpoint<WeightsGetRequest, IResult>
 {
     public required CurrentUser CurrentUser { get; init; }
 
     public override void Configure()
     {
-        Get("api/weight");
+        Get("api/weights");
         Options(builder => builder.SetCustomCache());
         Description(builder => builder
-            .WithName("GetWeight")
-            .Produces<WeightGetResponse>()
+            .WithName("GetWeights")
+            .Produces<WeightsGetResponse>()
             .ProducesCommonProblems());
     }
 
-    public override async Task<IResult> ExecuteAsync(WeightGetRequest request, CancellationToken ct)
+    public override async Task<IResult> ExecuteAsync(WeightsGetRequest request, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();

@@ -5,9 +5,9 @@ using WeightTracker.Api.Cache;
 using WeightTracker.Api.Extensions;
 using WeightTracker.Api.Handlers;
 
-namespace WeightTracker.Api.Endpoints.Weight.Put;
+namespace WeightTracker.Api.Endpoints.Weights.Put;
 
-internal sealed class WeightPutEndpoint : Endpoint<WeightPutRequest, IResult>
+internal sealed class WeightsPutEndpoint : Endpoint<WeightsPutRequest, IResult>
 {
     public required CurrentUser CurrentUser { get; init; }
 
@@ -15,26 +15,29 @@ internal sealed class WeightPutEndpoint : Endpoint<WeightPutRequest, IResult>
 
     public override void Configure()
     {
-        Put("api/weight/{Date}");
+        Put("api/weights/{Date}");
         Description(builder => builder
-            .WithName("UpdateWeight")
-            .Produces(StatusCodes.Status200OK)
+            .WithName("UpdateWeightEntry")
+            .Produces<WeightsEntryResponse>(StatusCodes.Status200OK)
             .ProducesWriteCommonProblems());
     }
 
-    public override async Task<IResult> ExecuteAsync(WeightPutRequest request, CancellationToken ct)
+    public override async Task<IResult> ExecuteAsync(WeightsPutRequest request, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(CurrentUser.Id))
             return Results.Unauthorized();
 
         var (date, weight) = request;
+        var parsedDate = DateOnly.Parse(date, CultureInfo.InvariantCulture);
         var command = new UpdateWeightData(
             UserId: CurrentUser.Id,
-            Date: DateOnly.Parse(date, CultureInfo.InvariantCulture),
+            Date: parsedDate,
             Weight: weight);
         var result = await command.ExecuteAsync(ct);
 
         await Cache.EvictByUidAsync(CurrentUser.Id, ct);
-        return result.Match(() => Results.Ok(), ErrorsService.HandleError);
+
+        var response = new WeightsEntryResponse(parsedDate.ToDomainDateString(), weight);
+        return result.Match(() => Results.Ok(response), ErrorsService.HandleError);
     }
 }

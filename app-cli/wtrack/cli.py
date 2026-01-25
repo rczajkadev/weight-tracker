@@ -167,8 +167,10 @@ def show_report(
     _print_date_range(sorted_entries)
     _print_weight_stats(report.stats)
 
-    if report.today.has_entry and report.today.weight is not None:
-        _print_current_weight(report.today.weight, float(avg_value))
+    today_weight = _find_today_weight(sorted_entries)
+
+    if today_weight is not None and report.stats is not None:
+        _print_current_weight(today_weight, float(avg_value))
 
     if plot:
         _run_with_status('Plotting data...', lambda: plot_data(sorted_entries, float(avg_value)))
@@ -273,7 +275,8 @@ def _handle_report_for_specific_day(date: str) -> None:
     if not ok or response is None:
         return
 
-    console.print(f'\nDate: [bold bright_cyan]{date}[/]')
+    display_date = response.date or date
+    console.print(f'\nDate: [bold bright_cyan]{display_date}[/]')
     console.print(f'Weight: [bold bright_cyan]{response.weight} {WEIGHT_UNIT}[/]\n')
 
 
@@ -323,6 +326,14 @@ def _print_current_weight(weight: float, avg_value: float) -> None:
         comparison = '[bold bright_cyan]EQUAL[/] to'
 
     console.print(f'Current weight [bold bright_cyan]{weight:.2f} {WEIGHT_UNIT}[/] is {comparison} average.\n')
+
+
+def _find_today_weight(weight_data: Sequence[WeightEntry]) -> float | None:
+    today_value = datetime.utcnow().date().strftime(DATE_FORMAT)
+    for entry in weight_data:
+        if entry.date == today_value:
+            return entry.weight
+    return None
 
 
 def _print_date_range(weight_data: Sequence[WeightEntry]) -> None:

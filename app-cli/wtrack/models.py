@@ -45,22 +45,6 @@ class WeightStats(PayloadModel):
     avg: float
 
 
-class ReportToday(PayloadModel):
-    has_entry: bool = Field(default=False, alias='hasEntry')
-    weight: float | None = None
-
-    @model_validator(mode='after')
-    def _validate_weight(self) -> ReportToday:
-        if self.has_entry and self.weight is None:
-            raise ValueError("Field 'weight' must be provided when 'hasEntry' is true.")
-        return self
-
-
 class ReportData(PayloadModel):
     data: tuple[WeightEntry, ...] = ()
-    today: ReportToday = Field(default_factory=ReportToday)
     stats: WeightStats | None = None
-
-
-class WeightByDate(PayloadModel):
-    weight: float

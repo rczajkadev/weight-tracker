@@ -1,12 +1,12 @@
 ﻿using FluentValidation;
 
-namespace WeightTracker.Api.Endpoints.Weight.Post;
+namespace WeightTracker.Api.Endpoints.Weights.Post;
 
-internal sealed record WeightPostRequest(decimal Weight, string? Date);
+internal sealed record WeightsPostRequest(decimal Weight, string? Date);
 
-internal sealed class WeightPostRequestValidator : Validator<WeightPostRequest>
+internal sealed class WeightsPostRequestValidator : Validator<WeightsPostRequest>
 {
-    public WeightPostRequestValidator()
+    public WeightsPostRequestValidator()
     {
         RuleFor(r => r.Weight)
             .NotEmpty()
