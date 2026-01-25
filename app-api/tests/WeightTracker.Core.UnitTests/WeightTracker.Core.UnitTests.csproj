@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\WeightTracker.Core\WeightTracker.Core.csproj" />
+    <ProjectReference Include="..\..\src\WeightTracker.Core\WeightTracker.Core.csproj" />
   </ItemGroup>
 
 </Project>

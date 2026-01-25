@@ -43,7 +43,7 @@ jobs:
     name: Build API Project
     runs-on: ubuntu-latest
     env:
-      API_PROJECT_PATH: WeightTracker.Api/WeightTracker.Api.csproj
+      API_PROJECT_PATH: src/WeightTracker.Api/WeightTracker.Api.csproj
       WORKING_DIRECTORY: app-api
     permissions:
       contents: read
