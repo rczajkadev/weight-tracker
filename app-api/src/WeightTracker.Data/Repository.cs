@@ -14,8 +14,16 @@ internal sealed class Repository(TableServiceClient tableServiceClient) : IRepos
     {
         var tableClient = await GetTableClientAsync(ct);
         var entity = weightData.ToEntity();
-        var response = await tableClient.AddEntityAsync(entity, ct);
-        return GetResponse(response);
+
+        try
+        {
+            var response = await tableClient.AddEntityAsync(entity, ct);
+            return GetResponse(response);
+        }
+        catch (RequestFailedException ex)
+        {
+            return GetResponse(ex);
+        }
     }
 
     public async Task<WeightDataGroup> GetAsync(WeightDataFilter weightDataFilter, CancellationToken ct)
@@ -38,15 +46,31 @@ internal sealed class Repository(TableServiceClient tableServiceClient) : IRepos
         var tableClient = await GetTableClientAsync(ct);
         var entity = weightData.ToEntity();
         entity.ETag = ETag.All;
-        var response = await tableClient.UpdateEntityAsync(entity, entity.ETag, TableUpdateMode.Replace, ct);
-        return GetResponse(response);
+
+        try
+        {
+            var response = await tableClient.UpdateEntityAsync(entity, entity.ETag, TableUpdateMode.Replace, ct);
+            return GetResponse(response);
+        }
+        catch (RequestFailedException ex)
+        {
+            return GetResponse(ex);
+        }
     }
 
     public async Task<ResponseTuple> DeleteAsync(string userId, DateOnly date, CancellationToken ct)
     {
         var tableClient = await GetTableClientAsync(ct);
-        var response = await tableClient.DeleteEntityAsync(userId, date.ToDomainDateString(), cancellationToken: ct);
-        return GetResponse(response);
+
+        try
+        {
+            var response = await tableClient.DeleteEntityAsync(userId, date.ToDomainDateString(), cancellationToken: ct);
+            return GetResponse(response);
+        }
+        catch (RequestFailedException ex)
+        {
+            return GetResponse(ex);
+        }
     }
 
     private async Task<TableClient> GetTableClientAsync(CancellationToken ct)
@@ -57,4 +81,5 @@ internal sealed class Repository(TableServiceClient tableServiceClient) : IRepos
     }
 
     private static ResponseTuple GetResponse(Response response) => (!response.IsError, (HttpStatusCode)response.Status);
+    private static ResponseTuple GetResponse(RequestFailedException ex) => (false, (HttpStatusCode)ex.Status);
 }
