@@ -3,16 +3,9 @@
 set -e
 
 root_dir=$(git rev-parse --show-toplevel)
-venv_python="$root_dir/app-cli/.venv/Scripts/python.exe"
 
-if [ ! -f "$venv_python" ]; then
-  venv_python="$root_dir/app-cli/.venv/bin/python"
-fi
-
-if [ ! -f "$venv_python" ]; then
-  echo "Python venv not found. Create it in $root_dir/app-cli/.venv first." >&2
-  exit 1
-fi
+. "$root_dir/scripts/venv.sh"
+set_venv_python "$root_dir"
 
 echo "Loading environment variables..."
 
@@ -22,7 +15,7 @@ echo "Creating executable..."
 
 rm -rf "$root_dir/app-cli/dist"
 
-"$venv_python" -m PyInstaller "$root_dir/app-cli/wtrack/__main__.py" \
+"$VENV_PY" -m PyInstaller "$root_dir/app-cli/wtrack/__main__.py" \
   --name "$CLI_APP_NAME" \
   --distpath "$root_dir/app-cli/dist" \
   --workpath "$root_dir/app-cli/build" \
