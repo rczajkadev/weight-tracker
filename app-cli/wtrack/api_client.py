@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from http import HTTPStatus
+from typing import TYPE_CHECKING, TypeVar
 from urllib.parse import urlparse
 
 from weight_tracker_client import AuthenticatedClient
@@ -23,7 +24,11 @@ from weight_tracker_client.models import (
 from .errors import ApiError, ConfigError
 from .settings import get_config
 
+if TYPE_CHECKING:
+    from weight_tracker_client.types import Response
+
 DEFAULT_TIMEOUT_SECONDS = 15
+TParsed = TypeVar('TParsed')
 
 
 class WeightsApi:
@@ -84,22 +89,20 @@ def _is_absolute_url(value: str) -> bool:
     return parsed.scheme in {'http', 'https'} and bool(parsed.netloc)
 
 
-def _parse_and_ensure_status(response: object, expected_status: HTTPStatus, label: str) -> object:
-    status = getattr(response, 'status_code', None)
+def _parse_and_ensure_status[TParsed](
+    response: Response[TParsed | None],
+    expected_status: HTTPStatus,
+    label: str,
+) -> TParsed:
+    if response.status_code != expected_status:
+        raise ApiError(f'Server responded with an error ({response.status_code}): {label}.')
 
-    if status != expected_status:
-        raise ApiError(f'Server responded with an error ({status}): {label}.')
-
-    parsed = getattr(response, 'parsed', None)
-
-    if parsed is None:
+    if response.parsed is None:
         raise ApiError(f'Empty {label} response payload.')
 
-    return parsed
+    return response.parsed
 
 
-def _ensure_status(response: object, expected_status: HTTPStatus, label: str) -> None:
-    status = getattr(response, 'status_code', None)
-
-    if status != expected_status:
-        raise ApiError(f'Server responded with an error ({status}): {label}.')
+def _ensure_status(response: Response[object], expected_status: HTTPStatus, label: str) -> None:
+    if response.status_code != expected_status:
+        raise ApiError(f'Server responded with an error ({response.status_code}): {label}.')

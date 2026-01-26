@@ -30,7 +30,7 @@ Commands:
 
 ## OpenAPI Python Client
 
-The CLI uses a generated Python client based on the API OpenAPI document.
+The CLI uses a generated Python client (based on OpenAPI doc).
 
 Generate and install locally:
 
