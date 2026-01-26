@@ -1,85 +1,73 @@
 from __future__ import annotations
 
+from http import HTTPStatus
 from urllib.parse import urlparse
 
-import requests
-from pydantic import BaseModel, ValidationError
-from requests import Response
+from weight_tracker_client import AuthenticatedClient
+from weight_tracker_client.api.weights import (
+    create_weight_entry,
+    delete_weight_entry,
+    get_weight_entry,
+    get_weights,
+    get_weights_summary,
+    update_weight_entry,
+)
+from weight_tracker_client.models import (
+    WeightsEntryResponse,
+    WeightsGetResponse,
+    WeightsPostRequest,
+    WeightsPutRequest,
+    WeightsSummaryGetResponse,
+)
 
 from .errors import ApiError, ConfigError
-from .models import ReportData, StatusReport, WeightEntry
 from .settings import get_config
 
 DEFAULT_TIMEOUT_SECONDS = 15
 
 
-def get_status(access_token: str) -> StatusReport:
-    payload = _send_request('GET', 'api/weights/summary', access_token=access_token).json()
-    return _parse_response(payload, StatusReport, 'status')
+class WeightsApi:
+    def __init__(self, access_token: str) -> None:
+        self._client = _build_client(access_token)
+
+    def get_summary(self) -> WeightsSummaryGetResponse:
+        response = get_weights_summary.sync_detailed(client=self._client)
+        return _parse_and_ensure_status(response, HTTPStatus.OK, 'status')
+
+    def get(self, date_from: str | None, date_to: str | None) -> WeightsGetResponse:
+        response = get_weights.sync_detailed(client=self._client, from_=date_from, to=date_to)
+        return _parse_and_ensure_status(response, HTTPStatus.OK, 'report')
+
+    def get_by_date(self, date: str) -> WeightsEntryResponse:
+        response = get_weight_entry.sync_detailed(date, client=self._client)
+        return _parse_and_ensure_status(response, HTTPStatus.OK, 'weight-by-date')
+
+    def add(self, date: str | None, weight: float) -> None:
+        body = WeightsPostRequest(weight=weight, date=date)
+        response = create_weight_entry.sync_detailed(client=self._client, body=body)
+        _ensure_status(response, HTTPStatus.CREATED, 'add-weight')
+
+    def update(self, date: str, weight: float) -> None:
+        body = WeightsPutRequest(weight=weight)
+        response = update_weight_entry.sync_detailed(date, client=self._client, body=body)
+        _ensure_status(response, HTTPStatus.OK, 'update-weight')
+
+    def delete(self, date: str) -> None:
+        response = delete_weight_entry.sync_detailed(date, client=self._client)
+        _ensure_status(response, HTTPStatus.NO_CONTENT, 'delete-weight')
 
 
-def get_weight_data(date_from: str | None, date_to: str | None, access_token: str) -> ReportData:
-    params = _build_params(from_date=date_from, to_date=date_to)
-    payload = _send_request('GET', 'api/weights', params=params, access_token=access_token).json()
-    return _parse_response(payload, ReportData, 'report')
+def _build_client(access_token: str) -> AuthenticatedClient:
+    base_url = _resolve_base_url()
+
+    return AuthenticatedClient(
+        base_url=base_url,
+        token=access_token,
+        timeout=DEFAULT_TIMEOUT_SECONDS,
+    )
 
 
-def get_weight_data_by_date(date: str, access_token: str) -> WeightEntry:
-    payload = _send_request('GET', f'api/weights/{date}', access_token=access_token).json()
-    return _parse_response(payload, WeightEntry, 'weight-by-date')
-
-
-def add_weight_data(date: str | None, weight: float, access_token: str) -> None:
-    data = {'weight': weight}
-
-    if date is not None:
-        data['date'] = date
-
-    _send_request('POST', 'api/weights', data=data, access_token=access_token)
-
-
-def update_weight_data(date: str, weight: float, access_token: str) -> None:
-    data = {'weight': weight}
-    _send_request('PUT', f'api/weights/{date}', data=data, access_token=access_token)
-
-
-def delete_weight_data(date: str, access_token: str) -> None:
-    _send_request('DELETE', f'api/weights/{date}', access_token=access_token)
-
-
-def _send_request(
-    method: str,
-    url: str,
-    *,
-    data: dict[str, object] | None = None,
-    params: dict[str, str] | None = None,
-    access_token: str | None = None,
-) -> Response:
-    headers = {'Authorization': f'Bearer {access_token}'} if access_token else {}
-    resolved_url = _resolve_url(url)
-
-    try:
-        response = requests.request(
-            method,
-            resolved_url,
-            json=data,
-            params=params,
-            headers=headers or None,
-            timeout=DEFAULT_TIMEOUT_SECONDS,
-        )
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as exc:
-        raise ApiError(f'Server responded with an error: {exc}') from exc
-    except requests.exceptions.RequestException as exc:
-        raise ApiError(f'Could not reach the server: {exc}') from exc
-
-    return response
-
-
-def _resolve_url(url: str) -> str:
-    if _is_absolute_url(url):
-        return url
-
+def _resolve_base_url() -> str:
     base_url = get_config().api.base_url.strip()
 
     if not base_url:
@@ -88,7 +76,7 @@ def _resolve_url(url: str) -> str:
     if not _is_absolute_url(base_url):
         raise ConfigError("Invalid 'base_url' in api configuration. It must include http or https.")
 
-    return f'{base_url.rstrip("/")}/{url.lstrip("/")}'
+    return base_url.rstrip('/')
 
 
 def _is_absolute_url(value: str) -> bool:
@@ -96,20 +84,22 @@ def _is_absolute_url(value: str) -> bool:
     return parsed.scheme in {'http', 'https'} and bool(parsed.netloc)
 
 
-def _build_params(from_date: str | None, to_date: str | None) -> dict[str, str] | None:
-    params: dict[str, str] = {}
+def _parse_and_ensure_status(response: object, expected_status: HTTPStatus, label: str) -> object:
+    status = getattr(response, 'status_code', None)
 
-    if from_date is not None:
-        params['from'] = from_date
+    if status != expected_status:
+        raise ApiError(f'Server responded with an error ({status}): {label}.')
 
-    if to_date is not None:
-        params['to'] = to_date
+    parsed = getattr(response, 'parsed', None)
 
-    return params or None
+    if parsed is None:
+        raise ApiError(f'Empty {label} response payload.')
+
+    return parsed
 
 
-def _parse_response[T: BaseModel](payload: object, model: type[T], label: str) -> T:
-    try:
-        return model.model_validate(payload)
-    except ValidationError as exc:
-        raise ApiError(f'Invalid {label} response payload.') from exc
+def _ensure_status(response: object, expected_status: HTTPStatus, label: str) -> None:
+    status = getattr(response, 'status_code', None)
+
+    if status != expected_status:
+        raise ApiError(f'Server responded with an error ({status}): {label}.')

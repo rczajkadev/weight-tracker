@@ -25,7 +25,7 @@ internal static class WeightsGetMappings
     {
         Stats = data.Data.Any()
             ? new StatsResponse(Avg: data.Stats.AverageWeight, Max: data.Stats.MaxWeight, Min: data.Stats.MinWeight)
-            : null,
+            : new StatsResponse(0, 0, 0),
         Data = data.Data.Select(d => new WeightsEntryResponse(d.Date.ToDomainDateString(), d.Weight))
     };
 }

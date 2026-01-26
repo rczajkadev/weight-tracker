@@ -1,6 +1,4 @@
-﻿using WeightTracker.Api.SharedContracts;
-
-namespace WeightTracker.Api.Endpoints.Weights.GetSummary;
+﻿namespace WeightTracker.Api.Endpoints.Weights.GetSummary;
 
 internal sealed record WeightsSummaryGetResponse(
     TodayResponse Today,

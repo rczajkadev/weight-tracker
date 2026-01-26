@@ -18,7 +18,7 @@ internal sealed class CustomCachePolicy : IOutputCachePolicy
         context.AllowCacheStorage = attemptOutputCaching;
         context.AllowLocking = true;
 
-        var uid = context.HttpContext.GetUserId() ?? anonymousUid;
+        var uid = context.HttpContext.UserId ?? anonymousUid;
         context.CacheVaryByRules.VaryByValues[userUidKey] = uid;
         context.CacheVaryByRules.QueryKeys = "*";
 
@@ -30,7 +30,7 @@ internal sealed class CustomCachePolicy : IOutputCachePolicy
     public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken _)
     {
         var response = context.HttpContext.Response;
-        var uid = context.HttpContext.GetUserId();
+        var uid = context.HttpContext.UserId;
 
         var setsCookie = !StringValues.IsNullOrEmpty(response.Headers.SetCookie);
         var isOkStatus = response.StatusCode == StatusCodes.Status200OK;

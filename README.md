@@ -1,4 +1,4 @@
-# Weight Tracker
+﻿# Weight Tracker
 
 ## requirements
 
@@ -26,4 +26,20 @@ Commands:
   report   aliases: show, get, list, ls, display
   update   aliases: edit
   remove   aliases: rm, delete
+```
+
+## OpenAPI Python Client
+
+The CLI uses a generated Python client based on the API OpenAPI document.
+
+Generate and install locally (shell):
+
+```
+app-cli/generate_openapi_client.sh
+```
+
+Generator dependency:
+
+```
+pip install -r app-cli/requirements-dev.txt
 ```

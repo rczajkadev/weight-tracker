@@ -4,5 +4,8 @@ namespace WeightTracker.Api.Extensions;
 
 internal static class HttpContextExtensions
 {
-    public static string? GetUserId(this HttpContext context) => context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    extension(HttpContext context)
+    {
+        public string? UserId => context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+    }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using WeightTracker.Api;
 using WeightTracker.Api.Auth;
 using WeightTracker.Api.Cache;
 using WeightTracker.Api.Extensions;
@@ -22,6 +23,7 @@ builder.Services.SwaggerDocument(options =>
     {
         settings.Title = "Weight Tracker";
         settings.AddApiKeyAuth(builder.Configuration);
+        settings.SchemaSettings.SchemaProcessors.Add(new RequiredNonNullableSchemaProcessor());
     };
 });
 

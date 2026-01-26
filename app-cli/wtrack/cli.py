@@ -7,9 +7,10 @@ import typer
 from rich.console import Console
 from rich.style import Style
 from rich.table import Table
+from weight_tracker_client.types import Unset
 
-from . import api_client as api
 from . import auth
+from .api_client import WeightsApi
 from .constants import APP_NAME, WEIGHT_UNIT
 from .errors import AppError
 from .visualizer import plot_data
@@ -17,7 +18,7 @@ from .visualizer import plot_data
 if TYPE_CHECKING:
     from collections.abc import Callable, Sequence
 
-    from .models import WeightEntry, WeightStats
+    from weight_tracker_client.models import StatsResponse, WeightsEntryResponse
 
 SPINNER = 'arc'
 ADHERENCE_WINDOWS = {30}
@@ -25,8 +26,8 @@ DATE_FORMAT = '%Y-%m-%d'
 DATE_FORMAT_LABEL = 'YYYY-MM-DD'
 
 STATUS_STYLE = Style(color='bright_cyan', bold=True)
-STATUS_OK = '[bold bright_cyan]OK[/]'
-STATUS_NO = '[bold deep_pink2]NO[/]'
+STATUS_OK = '[bold bright_cyan]✓[/]'
+STATUS_NO = '[bold deep_pink2]✗[/]'
 
 app = typer.Typer(name=APP_NAME, add_completion=False, no_args_is_help=True)
 
@@ -54,23 +55,31 @@ def logout() -> None:
 @app.command('status', help='aliases: streak')
 @app.command('streak', hidden=True)
 def show_status() -> None:
-    ok, status = _run_with_token('Checking status...', api.get_status)
+    ok, status = _run_with_token('Checking status...', lambda weight_api: weight_api.get_summary())
 
     if not ok or status is None:
         return
 
     console.print()
 
-    if status.today.has_entry:
-        current_weight = f'{status.today.weight} {WEIGHT_UNIT}'
+    today = status.today
+    has_entry = bool(today.has_entry)
+    has_value = today.weight is not None and not isinstance(today.weight, Unset)
+
+    if has_entry and has_value:
+        current_weight = f'{today.weight} {WEIGHT_UNIT}'
         console.print(f'{STATUS_OK} Data added: [bold bright_cyan]{current_weight}[/]')
     else:
         console.print(f'{STATUS_NO} No entry yet today.')
 
     console.print()
 
-    current_streak = _format_days(status.streak.current)
-    longest_streak = _format_days(status.streak.longest)
+    streak = status.streak
+    current = int(streak.current)
+    longest = int(streak.longest)
+
+    current_streak = _format_days(current)
+    longest_streak = _format_days(longest)
 
     console.print(
         f'[bold]Streak:[/] [bold bright_cyan]{current_streak}[/] (best: [bold bright_cyan]{longest_streak}[/])'
@@ -79,10 +88,14 @@ def show_status() -> None:
     for adherence in status.adherence:
         window = adherence.window
 
-        if window not in ADHERENCE_WINDOWS:
+        if window is None or window not in ADHERENCE_WINDOWS:
             continue
 
         days_missed = adherence.days_missed
+
+        if days_missed is None:
+            continue
+
         console.print(f'[bold]Adherence ({window}d):[/] [bold bright_cyan]{days_missed}[/] missed')
 
     console.print()
@@ -100,7 +113,7 @@ def add_weight_data(
     if date is not None:
         date = _validate_date(date, 'Date')
 
-    ok, _ = _run_with_token('Adding data...', lambda token: api.add_weight_data(date, weight, token))
+    ok, _ = _run_with_token('Adding data...', lambda weight_api: weight_api.add(date, weight))
 
     if not ok:
         return
@@ -140,17 +153,19 @@ def show_report(
     if date_from and date_to and _parse_date(date_from, 'Date from') > _parse_date(date_to, 'Date to'):
         raise typer.BadParameter('Date from must be before or equal to date to.')
 
-    ok, report = _run_with_token('Fetching data...', lambda token: api.get_weight_data(date_from, date_to, token))
+    ok, report = _run_with_token('Fetching data...', lambda weight_api: weight_api.get(date_from, date_to))
 
     if not ok or report is None:
         return
 
-    if not report.data:
+    entries = report.data
+
+    if not entries:
         console.print('No data found.')
         return
 
-    sorted_entries = _sort_entries(report.data)
-    avg_value = report.stats.avg if report.stats else 0.0
+    sorted_entries = _sort_entries(entries)
+    avg_value = float(report.stats.avg)
 
     table = _create_weight_data_table(sorted_entries, tail)
 
@@ -169,11 +184,11 @@ def show_report(
 
     today_weight = _find_today_weight(sorted_entries)
 
-    if today_weight is not None and report.stats is not None:
-        _print_current_weight(today_weight, float(avg_value))
+    if today_weight is not None:
+        _print_current_weight(today_weight, avg_value)
 
     if plot:
-        _run_with_status('Plotting data...', lambda: plot_data(sorted_entries, float(avg_value)))
+        _run_with_status('Plotting data...', lambda: plot_data(sorted_entries, avg_value))
 
 
 @app.command('update', help='aliases: edit')
@@ -185,7 +200,7 @@ def update_weight_data(
     weight = _validate_weight(weight)
     date = _validate_date(date, 'Date')
 
-    ok, _ = _run_with_token('Updating data...', lambda token: api.update_weight_data(date, weight, token))
+    ok, _ = _run_with_token('Updating data...', lambda weight_api: weight_api.update(date, weight))
 
     if not ok:
         return
@@ -207,7 +222,7 @@ def remove_weight_data(
         console.print('Operation cancelled.')
         return
 
-    ok, _ = _run_with_token('Removing data...', lambda token: api.delete_weight_data(date, token))
+    ok, _ = _run_with_token('Removing data...', lambda weight_api: weight_api.delete(date))
 
     if not ok:
         return
@@ -224,12 +239,12 @@ def _run_with_status[T](message: str, action: Callable[[], T]) -> tuple[bool, T 
         return False, None
 
 
-def _run_with_token[T](message: str, action: Callable[[str], T]) -> tuple[bool, T | None]:
-    def _call() -> T:
+def _run_with_token[T](message: str, action: Callable[[WeightsApi], T]) -> tuple[bool, T | None]:
+    def _callback() -> T:
         token = auth.acquire_token()
-        return action(token)
+        return action(WeightsApi(access_token=token))
 
-    return _run_with_status(message, _call)
+    return _run_with_status(message, _callback)
 
 
 def _print_error(error: AppError) -> None:
@@ -259,8 +274,8 @@ def _validate_weight(weight: float) -> float:
     return weight
 
 
-def _sort_entries(entries: Sequence[WeightEntry]) -> tuple[WeightEntry, ...]:
-    def sort_key(entry: WeightEntry) -> tuple[int, date | str]:
+def _sort_entries(entries: Sequence[WeightsEntryResponse]) -> tuple[WeightsEntryResponse, ...]:
+    def sort_key(entry: WeightsEntryResponse) -> tuple[int, date | str]:
         try:
             return (0, _parse_date(entry.date, 'date'))
         except typer.BadParameter:
@@ -270,17 +285,16 @@ def _sort_entries(entries: Sequence[WeightEntry]) -> tuple[WeightEntry, ...]:
 
 
 def _handle_report_for_specific_day(date: str) -> None:
-    ok, response = _run_with_token('Fetching data...', lambda token: api.get_weight_data_by_date(date, token))
+    ok, response = _run_with_token('Fetching data...', lambda weight_api: weight_api.get_by_date(date))
 
     if not ok or response is None:
         return
 
-    display_date = response.date or date
-    console.print(f'\nDate: [bold bright_cyan]{display_date}[/]')
+    console.print(f'\nDate: [bold bright_cyan]{response.date}[/]')
     console.print(f'Weight: [bold bright_cyan]{response.weight} {WEIGHT_UNIT}[/]\n')
 
 
-def _create_weight_data_table(weight_data: Sequence[WeightEntry], tail: int) -> Table:
+def _create_weight_data_table(weight_data: Sequence[WeightsEntryResponse], tail: int) -> Table:
     table = Table()
 
     table.add_column('Date', justify='center')
@@ -298,23 +312,23 @@ def _create_weight_data_table(weight_data: Sequence[WeightEntry], tail: int) -> 
             continue
 
         previous_weight = data_chunk[index - 1].weight if index > 0 else item.weight
-        diff = item.weight - previous_weight
+        diff = float(item.weight) - float(previous_weight)
         diff_text = f'{diff:+.2f}'
         row_style = Style(bold=True) if diff > 0 else None
 
-        table.add_row(item.date, f'{item.weight:.2f}', diff_text, style=row_style)
+        table.add_row(item.date, f'{float(item.weight):.2f}', diff_text, style=row_style)
 
     return table
 
 
-def _print_weight_stats(stats: WeightStats | None) -> None:
-    if stats is None:
-        console.print('Stats unavailable.\n')
-        return
+def _print_weight_stats(stats: StatsResponse) -> None:
+    max_value = stats.max_
+    min_value = stats.min_
+    avg_value = stats.avg
 
-    console.print(f'Max: [bold bright_cyan]{stats.max:>6.2f} {WEIGHT_UNIT}[/]')
-    console.print(f'Min: [bold bright_cyan]{stats.min:>6.2f} {WEIGHT_UNIT}[/]')
-    console.print(f'Avg: [bold bright_cyan]{stats.avg:>6.2f} {WEIGHT_UNIT}[/]\n')
+    console.print(f'Max: [bold bright_cyan]{max_value:>6.2f} {WEIGHT_UNIT}[/]')
+    console.print(f'Min: [bold bright_cyan]{min_value:>6.2f} {WEIGHT_UNIT}[/]')
+    console.print(f'Avg: [bold bright_cyan]{avg_value:>6.2f} {WEIGHT_UNIT}[/]\n')
 
 
 def _print_current_weight(weight: float, avg_value: float) -> None:
@@ -328,15 +342,15 @@ def _print_current_weight(weight: float, avg_value: float) -> None:
     console.print(f'Current weight [bold bright_cyan]{weight:.2f} {WEIGHT_UNIT}[/] is {comparison} average.\n')
 
 
-def _find_today_weight(weight_data: Sequence[WeightEntry]) -> float | None:
+def _find_today_weight(weight_data: Sequence[WeightsEntryResponse]) -> float | None:
     today_value = datetime.utcnow().date().strftime(DATE_FORMAT)
     for entry in weight_data:
         if entry.date == today_value:
-            return entry.weight
+            return float(entry.weight)
     return None
 
 
-def _print_date_range(weight_data: Sequence[WeightEntry]) -> None:
+def _print_date_range(weight_data: Sequence[WeightsEntryResponse]) -> None:
     min_date = weight_data[0].date
     max_date = weight_data[-1].date
 

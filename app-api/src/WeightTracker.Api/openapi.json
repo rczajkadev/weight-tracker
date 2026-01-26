@@ -322,6 +322,10 @@
       "WeightsEntryResponse": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "date",
+          "weight"
+        ],
         "properties": {
           "date": {
             "type": "string"
@@ -375,14 +379,13 @@
       "WeightsGetResponse": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "stats",
+          "data"
+        ],
         "properties": {
           "stats": {
-            "nullable": true,
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/StatsResponse"
-              }
-            ]
+            "$ref": "#/components/schemas/StatsResponse"
           },
           "data": {
             "type": "array",
@@ -395,6 +398,11 @@
       "StatsResponse": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "avg",
+          "max",
+          "min"
+        ],
         "properties": {
           "avg": {
             "type": "number",
@@ -417,6 +425,11 @@
       "WeightsSummaryGetResponse": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "today",
+          "streak",
+          "adherence"
+        ],
         "properties": {
           "today": {
             "$ref": "#/components/schemas/TodayResponse"
@@ -435,6 +448,10 @@
       "TodayResponse": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "date",
+          "hasEntry"
+        ],
         "properties": {
           "date": {
             "type": "string",
@@ -453,6 +470,10 @@
       "StreakResponse": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "current",
+          "longest"
+        ],
         "properties": {
           "current": {
             "type": "integer",
@@ -467,6 +488,11 @@
       "AdherenceResponseItem": {
         "type": "object",
         "additionalProperties": false,
+        "required": [
+          "window",
+          "daysWithEntry",
+          "daysMissed"
+        ],
         "properties": {
           "window": {
             "type": "integer",

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Protocol
 
 import plotly.graph_objects as go
 
@@ -9,7 +9,11 @@ from .constants import WEIGHT_UNIT
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-    from .models import WeightEntry
+
+class _Entry(Protocol):
+    date: str
+    weight: float
+
 
 BACKGROUND_COLOR = '#111111'
 DEFAULT_CONFIG = {'displaylogo': False}
@@ -17,7 +21,7 @@ POST_SCRIPT = f'''document.body.style.backgroundColor = "{BACKGROUND_COLOR}"; do
 TEMPLATE = 'plotly_dark'
 
 
-def plot_data(data: Sequence[WeightEntry], average: float) -> None:
+def plot_data(data: Sequence[_Entry], average: float) -> None:
     fig = go.Figure()
 
     fig.update_layout(
