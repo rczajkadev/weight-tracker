@@ -2,18 +2,30 @@
 
 set -e
 
+root_dir=$(git rev-parse --show-toplevel)
+venv_python="$root_dir/app-cli/.venv/Scripts/python.exe"
+
+if [ ! -f "$venv_python" ]; then
+  venv_python="$root_dir/app-cli/.venv/bin/python"
+fi
+
+if [ ! -f "$venv_python" ]; then
+  echo "Python venv not found. Create it in $root_dir/app-cli/.venv first."
+  exit 1
+fi
+
 echo "🚀 Running pre-commit hook 🚀"
 
 files=$(git diff --cached --name-only --diff-filter=d "*.py")
 
 if [ -n "$files" ]; then
   echo -e "\n✨ Sorting imports..."
-  ruff check --select I --fix $files
+  "$venv_python" -m ruff check --select I --fix $files
   git add $files
 
   echo -e "\n✨ Linting and formatting..."
-  ruff check $files
-  ruff format $files
+  "$venv_python" -m ruff check $files
+  "$venv_python" -m ruff format $files
 fi
 
 echo -e "\n🎉 Pre-commit status: success 🎉\n"

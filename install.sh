@@ -1,28 +1,38 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
 root_dir=$(git rev-parse --show-toplevel)
+venv_python="$root_dir/app-cli/.venv/Scripts/python.exe"
+
+if [ ! -f "$venv_python" ]; then
+  venv_python="$root_dir/app-cli/.venv/bin/python"
+fi
+
+if [ ! -f "$venv_python" ]; then
+  echo "Python venv not found. Create it in $root_dir/app-cli/.venv first." >&2
+  exit 1
+fi
 
 echo "Loading environment variables..."
 
-source $root_dir/.env
+source "$root_dir/.env"
 
 echo "Creating executable..."
 
-rm -rf $root_dir/app-cli/dist
+rm -rf "$root_dir/app-cli/dist"
 
-pyinstaller $root_dir/app-cli/wtrack/__main__.py \
-  --name $CLI_APP_NAME \
-  --distpath $root_dir/app-cli/dist \
-  --workpath $root_dir/app-cli/build \
+"$venv_python" -m PyInstaller "$root_dir/app-cli/wtrack/__main__.py" \
+  --name "$CLI_APP_NAME" \
+  --distpath "$root_dir/app-cli/dist" \
+  --workpath "$root_dir/app-cli/build" \
   --log-level=WARN \
   --exclude-module pyinstaller
 
 branch_name=$(git rev-parse --abbrev-ref HEAD)
 
 if [ "$branch_name" != "main" ]; then
-  echo "Skipping install to $CLI_APP_INSTALLATION_DIR — not on the main branch."
+  echo "Skipping install to $CLI_APP_INSTALLATION_DIR - not on the main branch."
   exit 0
 fi
 
@@ -33,9 +43,9 @@ fi
 
 echo "Removing existing installation at $CLI_APP_INSTALLATION_DIR..."
 
-rm -rf $CLI_APP_INSTALLATION_DIR/$CLI_APP_NAME
+rm -rf "$CLI_APP_INSTALLATION_DIR/$CLI_APP_NAME"
 
 echo "Copying executable to $CLI_APP_INSTALLATION_DIR..."
 
-cp $root_dir/app-cli/config.prod.yaml $root_dir/app-cli/dist/$CLI_APP_NAME/config.yaml
-cp -r $root_dir/app-cli/dist/$CLI_APP_NAME $CLI_APP_INSTALLATION_DIR
+cp "$root_dir/app-cli/config.prod.yaml" "$root_dir/app-cli/dist/$CLI_APP_NAME/config.yaml"
+cp -r "$root_dir/app-cli/dist/$CLI_APP_NAME" "$CLI_APP_INSTALLATION_DIR"
