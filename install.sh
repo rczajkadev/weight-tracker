@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -8,10 +8,6 @@ echo "Loading environment variables..."
 
 source $root_dir/.env
 
-echo "Generating OpenAPI Python client..."
-
-$root_dir/app-cli/generate_client.sh
-
 echo "Creating executable..."
 
 rm -rf $root_dir/app-cli/dist
@@ -20,7 +16,6 @@ pyinstaller $root_dir/app-cli/wtrack/__main__.py \
   --name $CLI_APP_NAME \
   --distpath $root_dir/app-cli/dist \
   --workpath $root_dir/app-cli/build \
-  --paths $root_dir/app-cli/generated_client \
   --log-level=WARN \
   --exclude-module pyinstaller
 

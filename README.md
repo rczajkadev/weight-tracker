@@ -32,10 +32,10 @@ Commands:
 
 The CLI uses a generated Python client based on the API OpenAPI document.
 
-Generate and install locally (shell):
+Generate and install locally:
 
 ```
-app-cli/generate_openapi_client.sh
+./app-cli/generate_client.sh
 ```
 
 Generator dependency:
